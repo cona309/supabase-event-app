@@ -1,25 +1,4 @@
-import "dotenv/config";
-import { createClient, SupabaseClient } from "@supabase/supabase-js";
-
-interface Event {
-  id: string;
-  title: string;
-  date: string;
-  location: string;
-  max_attendees: number;
-}
-
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-
-// SUPABASE_URL/SUPABASE_ANON_KEY가 비어 있으면 실제 클라이언트를 만들지 않고
-// Mock 모드로 동작한다. .env 없이도 나머지 로직을 검증할 수 있게 하기 위한
-// 안전장치다.
-const isSupabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
-
-const supabase: SupabaseClient | null = isSupabaseConfigured
-  ? createClient(SUPABASE_URL as string, SUPABASE_ANON_KEY as string)
-  : null;
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabaseClient";
 
 async function testConnection(): Promise<boolean> {
   if (!supabase) {
@@ -58,5 +37,4 @@ async function main() {
 
 main();
 
-export { supabase, testConnection };
-export type { Event };
+export { testConnection };
