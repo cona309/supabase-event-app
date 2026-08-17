@@ -53,6 +53,11 @@ function mockDeleteEvent(id: string): void {
   mockStore.splice(index, 1);
 }
 
+function mockSearchEvents(keyword: string): Event[] {
+  const normalized = keyword.toLowerCase();
+  return mockStore.filter((event) => event.title.toLowerCase().includes(normalized));
+}
+
 async function getEvents(): Promise<Event[]> {
   if (!useMock && supabase) {
     try {
@@ -118,6 +123,21 @@ async function deleteEvent(id: string): Promise<void> {
   mockDeleteEvent(id);
 }
 
+async function searchEvents(keyword: string): Promise<Event[]> {
+  if (!useMock && supabase) {
+    try {
+      const { data, error } = await supabase.from(TABLE).select("*").ilike("title", `%${keyword}%`);
+      if (!error && data) {
+        return data as Event[];
+      }
+      fallbackToMock("searchEvents", error?.message ?? "unknown error");
+    } catch (err) {
+      fallbackToMock("searchEvents", err instanceof Error ? err.message : String(err));
+    }
+  }
+  return mockSearchEvents(keyword);
+}
+
 async function runCrudSelfTest() {
   console.log("=== Events CRUD 테스트 ===");
 
@@ -138,6 +158,10 @@ async function runCrudSelfTest() {
   const updated = await updateEvent(created.id, { max_attendees: 80 });
   console.log(updated);
 
+  console.log("\n[검색] searchEvents('자동화')");
+  const searchResults = await searchEvents("자동화");
+  console.log(searchResults);
+
   console.log("\n[4] 삭제 (deleteEvent)");
   await deleteEvent(updated.id);
   const remaining = await getEvents();
@@ -146,5 +170,5 @@ async function runCrudSelfTest() {
 
 runCrudSelfTest();
 
-export { getEvents, createEvent, updateEvent, deleteEvent };
+export { getEvents, createEvent, updateEvent, deleteEvent, searchEvents };
 export type { Event, NewEvent, EventUpdate };
