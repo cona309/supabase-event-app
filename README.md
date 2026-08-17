@@ -1,5 +1,7 @@
 # Supabase Event App
 
+[![CI](https://github.com/cona309/supabase-event-app/actions/workflows/ci.yml/badge.svg)](https://github.com/cona309/supabase-event-app/actions/workflows/ci.yml)
+
 Supabase를 이용해 이벤트(`events` 테이블)를 관리하는 TypeScript 프로젝트입니다.
 Supabase 연결 정보가 없거나 연결에 실패해도 인메모리 Mock 저장소로 자동 전환되어
 CRUD 로직을 항상 끝까지 검증할 수 있습니다.
