@@ -30,14 +30,26 @@ async function testConnection(): Promise<boolean> {
     return false;
   }
 
-  const { error } = await supabase.auth.getSession();
-  if (error) {
-    console.error("Supabase 연결 실패:", error.message);
+  // auth.getSession()은 로컬 세션만 확인할 뿐 네트워크 요청을 보내지 않으므로
+  // 잘못된 URL/키에도 항상 성공한 것처럼 보인다. 실제 연결 여부는 REST
+  // 엔드포인트에 직접 요청을 보내 응답을 받는지로 확인해야 한다.
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+      headers: { apikey: SUPABASE_ANON_KEY as string },
+    });
+
+    if (!response.ok && response.status !== 404) {
+      console.error(`Supabase 연결 실패: HTTP ${response.status} ${response.statusText}`);
+      return false;
+    }
+
+    console.log(`Supabase 연결 성공: ${SUPABASE_URL}`);
+    return true;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("Supabase 연결 실패:", message);
     return false;
   }
-
-  console.log(`Supabase 연결 성공: ${SUPABASE_URL}`);
-  return true;
 }
 
 async function main() {
